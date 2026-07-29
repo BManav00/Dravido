@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tracklimo Pricing Platform</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">TL</div>
+          <div>
+            <strong>Tracklimo</strong>
+            <span>Pricing Platform</span>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Primary">
+          <button class="nav-item active" data-view="partner">
+            <span>Partner Portal</span>
+          </button>
+          <button class="nav-item" data-view="admin">
+            <span>Admin Portal</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-card">
+          <span class="eyebrow">Workflow</span>
+          <ol>
+            <li>Select city and airport</li>
+            <li>Create zones</li>
+            <li>Set prices</li>
+            <li>Test fares</li>
+            <li>Submit for approval</li>
+          </ol>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Fleet partner extranet</p>
+            <h1>Configure, test, and approve city pricing</h1>
+          </div>
+          <div class="status-strip">
+            <span id="approvalStatus" class="status-pill pending">Draft</span>
+            <button id="resetData" class="ghost-button" type="button">Reset demo</button>
+          </div>
+        </header>
+
+        <section id="partnerView" class="view active" aria-label="Partner portal">
+          <div class="grid two">
+            <section class="panel control-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Setup</p>
+                  <h2>City, airport, and vehicles</h2>
+                </div>
+              </div>
+
+              <label class="field">
+                <span>Fleet partner</span>
+                <select id="partnerSelect"></select>
+              </label>
+
+              <div class="split-fields">
+                <label class="field">
+                  <span>City</span>
+                  <select id="citySelect"></select>
+                </label>
+                <label class="field">
+                  <span>Airport</span>
+                  <select id="airportSelect"></select>
+                </label>
+              </div>
+
+              <div>
+                <span class="field-title">City airports shown on map</span>
+                <div id="airportList" class="airport-list"></div>
+              </div>
+
+              <div>
+                <span class="field-title">Vehicle categories</span>
+                <div id="vehicleOptions" class="chip-grid"></div>
+              </div>
+            </section>
+
+            <section class="panel map-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Zones</p>
+                  <h2>Service map</h2>
+                </div>
+                <button id="fitCity" class="ghost-button" type="button">Fit city</button>
+              </div>
+              <div class="map-search">
+                <label class="field">
+                  <span>Search place</span>
+                  <input id="placeSearchInput" type="search" placeholder="Airport, hotel, landmark, zone name" />
+                </label>
+                <button id="placeSearchButton" class="primary-button" type="button">Search</button>
+              </div>
+              <div id="placeResults" class="place-results"></div>
+              <div class="map-board" aria-label="OpenStreetMap service zone editor">
+                <div id="leafletMap" class="leaflet-map"></div>
+                <div id="mapNotice" class="map-notice">
+                  <strong>OpenStreetMap zone editor</strong>
+                  <span>Use the Leaflet Draw toolbar on the map to add polygons, rectangles, circles, and markers.</span>
+                </div>
+              </div>
+              <div id="zoneList" class="zone-list"></div>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header wrap">
+              <div>
+                <p class="eyebrow">Pricing</p>
+                <h2>Rules by route type</h2>
+              </div>
+              <div class="segmented" role="tablist" aria-label="Pricing type">
+                <button class="segment active" data-pricing-tab="airportZone" type="button">Airport to zone</button>
+                <button class="segment" data-pricing-tab="zoneZone" type="button">Zone to zone</button>
+                <button class="segment" data-pricing-tab="distance" type="button">By distance</button>
+              </div>
+            </div>
+            <div id="pricingEditor"></div>
+          </section>
+
+          <section class="grid two">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Test module</p>
+                  <h2>Compare live-style quotes</h2>
+                </div>
+              </div>
+              <div class="split-fields">
+                <label class="field">
+                  <span>Pickup</span>
+                  <select id="testPickup"></select>
+                </label>
+                <label class="field">
+                  <span>Drop</span>
+                  <select id="testDrop"></select>
+                </label>
+              </div>
+              <label class="field">
+                <span>Vehicle</span>
+                <select id="testVehicle"></select>
+              </label>
+              <button id="runTest" class="primary-button full" type="button">Run price test</button>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Results</p>
+                  <h2>Affiliate comparison</h2>
+                </div>
+              </div>
+              <div id="quoteResults" class="quote-results"></div>
+            </div>
+          </section>
+
+          <section class="panel action-panel">
+            <div>
+              <p class="eyebrow">Approval</p>
+              <h2>Submit configured pricing for admin review</h2>
+            </div>
+            <button id="submitApproval" class="primary-button" type="button">Submit for approval</button>
+          </section>
+        </section>
+
+        <div id="zoneNameModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Name new zone">
+          <div class="modal-card">
+            <h3>Name this zone</h3>
+            <label class="field">
+              <span>Zone name</span>
+              <input id="zoneNameInput" type="text" placeholder="Enter a zone name" />
+            </label>
+            <div class="review-actions">
+              <button id="zoneNameCancel" class="ghost-button" type="button">Cancel</button>
+              <button id="zoneNameConfirm" class="primary-button" type="button">Save zone</button>
+            </div>
+          </div>
+        </div>
+
+        <section id="adminView" class="view" aria-label="Admin portal">
+          <div class="admin-layout">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Admin</p>
+                  <h2>Fleet partner approvals</h2>
+                </div>
+              </div>
+              <div id="partnerTable" class="partner-table"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Review</p>
+                  <h2 id="reviewTitle">Select a partner</h2>
+                </div>
+              </div>
+              <div id="adminReview" class="admin-review"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
